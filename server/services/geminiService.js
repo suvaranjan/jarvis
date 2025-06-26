@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import { GoogleGenAI } from "@google/genai";
 import fetch from "node-fetch";
+import { identityPrompt } from "./customPrompts.js";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -21,30 +22,7 @@ export const generateGeminiReply = async ({ message, imageUrl }) => {
 
   // Add Markdown formatting instruction
   contents.push({
-    text: `You are an AI assistant. Always format your response in GitHub-style Markdown with proper spacing.
-
-Guidelines:
-- Use headings like \`## Heading\` followed by a **blank line**
-- Separate paragraphs with **two newlines**
-- Use bullet lists with \`-\`, and separate items with newlines
-- Use numbered lists like \`1.\`, and separate items with newlines
-- Use triple backticks (\`\`\`) for code blocks and include the language (e.g., \`\`\`js)
-- Include a blank line before and after code blocks
-- Hyperlinks should be in [text](url) format
-
-Example:
-## Title
-
-Here is a paragraph explaining something.
-
-- First item
-- Second item
-
-\`\`\`javascript
-const x = 1;
-\`\`\`
-
-End each section with two newlines to ensure clean formatting.`,
+    text: identityPrompt,
   });
 
   // Optional image input

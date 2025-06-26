@@ -101,7 +101,7 @@ export const Sidebar = ({
                 <nav className="space-y-1 px-1">
                   {chats.map((chat) => (
                     <ChatListItem
-                      key={chat.id}
+                      key={chat.chatId}
                       label={chat.title}
                       onClick={() => onNavigate(chat.id)}
                       isActive={currentChatId === chat.id}

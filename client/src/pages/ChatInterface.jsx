@@ -71,7 +71,7 @@ const ChatInterface = () => {
                 }`}
               >
                 <div
-                  className={`rounded-lg px-4 py-2 text-md md:text-base ${
+                  className={`rounded-lg px-4 py-2 text-lg  ${
                     msg.sender === "user"
                       ? "bg-gray-200 text-gray-800 max-w-[75%]"
                       : "text-gray-800 w-full"

@@ -108,6 +108,31 @@ export const getMessagesForChat = async (req, res) => {
     res.status(200).json(messages);
   } catch (err) {
     console.error("❌ Error fetching messages:", err);
-    res.status(500).json({ error: "Failed to fetch messages", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch messages", details: err.message });
+  }
+};
+
+export const getChatsForUser = async (req, res) => {
+  const { dbUserId } = req.user;
+
+  try {
+    const chats = await Chat.find({ userId: dbUserId })
+      .select("_id title createdAt")
+      .sort({ createdAt: -1 }); // Newest first
+
+    const formattedChats = chats.map((chat) => ({
+      id: chat._id,
+      title: chat.title,
+      createdAt: chat.createdAt,
+    }));
+
+    res.status(200).json(formattedChats);
+  } catch (err) {
+    console.error("❌ Error fetching chats:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch chat list", details: err.message });
   }
 };

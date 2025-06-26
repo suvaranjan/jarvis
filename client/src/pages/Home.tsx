@@ -8,9 +8,14 @@ const Home = () => {
 
   const handleSubmit = async (input) => {
     if (!input.trim()) return;
+
+    // 🧠 Generate title from first 10 words
+    const words = input.trim().split(/\s+/).slice(0, 10);
+    const generatedTitle = words.join(" ") + (words.length === 10 ? "..." : "");
+
     try {
       const response = await authorizedAxios.post("/chat/create", {
-        title: "New Chat",
+        title: generatedTitle,
         userMessage: input,
         imageUrl: null,
       });

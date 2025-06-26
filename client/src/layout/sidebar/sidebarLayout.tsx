@@ -3,34 +3,38 @@ import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Sidebar } from "./sidebar";
 import { useEffect, useState } from "react";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { useAxios } from "../../hooks/useAxios";
 
 const SidebarLayout = () => {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+  const [chats, setChats] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
   const { chatId } = useParams();
+  const { authorizedAxios } = useAxios();
 
-  const [chats] = useState([
-    { id: "1", title: "Getting started with AI" },
-    {
-      id: "2",
-      title: "Project ideas discussion for new startups with the help of AI",
-    },
-    { id: "3", title: "Technical support for new startups" },
-    { id: "4", title: "Latest AI models and their applications" },
-    {
-      id: "5",
-      title: "Ethical considerations in AI development and deployment",
-    },
-  ]);
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const res = await authorizedAxios.get("/chat/list");
+        console.log(res.data);
 
-  // Close sidebar on mobile when route changes
+        setChats(res.data);
+      } catch (error) {
+        console.log(error.message);
+
+        // console.error("❌ Failed to fetch chats:", error);
+      }
+    };
+
+    fetchChats();
+  }, []);
+
   useEffect(() => {
     if (isMobile) setIsSidebarOpen(false);
   }, [location.pathname, isMobile]);
 
-  // Prevent body scroll on mobile when sidebar is open
   useEffect(() => {
     if (isMobile) {
       document.body.style.overflow = isSidebarOpen ? "hidden" : "";
@@ -54,7 +58,6 @@ const SidebarLayout = () => {
         isOpen={isSidebarOpen}
         onClose={toggleSidebar}
         chats={chats}
-        // currentChatId - if any chat is open in sidebar chatlist, that chatItem needs to active.
         currentChatId={chatId}
         onNewChat={startNewChat}
         onNavigate={(chatId) => {
@@ -63,7 +66,6 @@ const SidebarLayout = () => {
         }}
       />
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {isMobile && !isSidebarOpen && (
           <header className="flex h-14 items-center gap-2 px-4 bg-white border-b border-gray-200">
