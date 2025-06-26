@@ -1,12 +1,14 @@
 import express from "express";
 import {
   sendMessageToGemini,
-  getChatHistory,
+  getMessagesForChat,
+  createChat,
 } from "../controllers/chatController.js";
 
 const router = express.Router();
 
-router.post("/", sendMessageToGemini);
-router.get("/:userId", getChatHistory);
+router.post("/create", createChat);
+router.post("/ask-to-gemini", sendMessageToGemini);
+router.get("/:id/get-messages", getMessagesForChat);
 
 export default router;

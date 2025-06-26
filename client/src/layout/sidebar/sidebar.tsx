@@ -2,6 +2,7 @@ import { UserButton } from "@clerk/clerk-react";
 import { SidebarButton } from "./sidebarButton";
 import { MailPlus, AlignLeft, Search, X } from "lucide-react";
 import { ChatListItem } from "./chatListItem";
+import { useNavigate } from "react-router-dom";
 
 export const Sidebar = ({
   isMobile,
@@ -12,6 +13,7 @@ export const Sidebar = ({
   onNewChat,
   onNavigate,
 }) => {
+  const navigate = useNavigate();
   return (
     <>
       {isMobile && isOpen && (
@@ -80,7 +82,7 @@ export const Sidebar = ({
             <SidebarButton
               icon={Search}
               label="Search"
-              onClick={() => {}}
+              onClick={() => navigate("/test")}
               isExpanded={isOpen}
             />
           </div>

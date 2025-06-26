@@ -1,107 +1,96 @@
-// ChatInterface.jsx
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useAxios } from "../hooks/useAxios";
+import ChatForm from "../components/ChatForm";
 
 const ChatInterface = () => {
   const { chatId } = useParams();
+  const { authorizedAxios } = useAxios();
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const messagesEndRef = useRef(null);
 
-  // In a real app, you would fetch the chat messages here
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
-    // Simulate loading messages
-    setIsLoading(true);
-    setTimeout(() => {
-      setMessages([
-        {
-          id: "1",
-          text: "Hello! How can I help you today?",
-          sender: "ai",
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-      setIsLoading(false);
-    }, 500);
+    const fetchMessages = async () => {
+      try {
+        const res = await authorizedAxios.get(`/chat/${chatId}/get-messages`);
+        setMessages(res.data);
+      } catch (err) {
+        console.error("Failed to fetch messages:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMessages();
   }, [chatId]);
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
-    // Add user message
+  const handleSubmit = async (input, imageUrl = null) => {
+    if (!input.trim()) return;
     const userMessage = {
-      id: Date.now().toString(),
       text: input,
       sender: "user",
-      timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     };
-    setMessages([...messages, userMessage]);
-    setInput("");
-    setIsLoading(true);
+    setMessages((prev) => [...prev, userMessage]);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage = {
-        id: (Date.now() + 1).toString(),
-        text: "I'm an AI assistant. How can I help you further?",
-        sender: "ai",
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsLoading(false);
-    }, 1000);
+    try {
+      const res = await authorizedAxios.post(`/chat/ask-to-gemini`, {
+        text: input,
+        imageUrl,
+        chatId,
+      });
+      setMessages((prev) => [...prev, res.data.geminiMessage]);
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {isLoading && messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-pulse">Loading chat...</div>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
+    <div className="flex flex-col h-full bg-gray-50">
+      {/* Scrollable Messages Area */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <div className="max-w-3xl w-full mx-auto px-4 py-6 space-y-4">
+          {loading ? (
+            <div className="flex justify-center items-center h-full text-gray-500 animate-pulse">
+              Loading chat...
+            </div>
+          ) : (
+            messages.map((msg, index) => (
               <div
-                className={`max-w-3/4 rounded-lg px-4 py-2 ${
-                  message.sender === "user"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-800"
+                key={index}
+                className={`flex ${
+                  msg.sender === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {message.text}
+                <div
+                  className={`rounded-lg px-4 py-2 text-md md:text-base ${
+                    msg.sender === "user"
+                      ? "bg-gray-200 text-gray-800 max-w-[75%]"
+                      : "text-gray-800 w-full"
+                  }`}
+                >
+                  {msg.text}
+                </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* Input */}
-      <div className="p-4 border-t border-gray-200 bg-white">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            disabled={isLoading || !input.trim()}
-          >
-            Send
-          </button>
-        </form>
+      {/* Sticky Form */}
+      <div className="sticky bottom-0 bg-gray-50 px-4 py-3">
+        <div className="max-w-3xl w-full mx-auto">
+          <ChatForm onSubmit={handleSubmit} />
+        </div>
       </div>
     </div>
   );

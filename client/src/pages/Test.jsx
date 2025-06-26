@@ -1,47 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAxios } from "../hooks/useAxios";
 
 function Test() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { getToken } = useAuth();
+
+  const { authorizedAxios } = useAxios();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = await getToken();
-        const response = await fetch("http://localhost:5000/", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const result = await response.json();
-        setData(result);
-        setLoading(false);
+        const response = await authorizedAxios.post("/chat", { msg: "hi" });
+        setData(response.data);
       } catch (err) {
         setError(err);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [getToken]);
+  }, [authorizedAxios]); // optional: add to deps
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div>
