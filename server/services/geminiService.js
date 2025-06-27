@@ -17,25 +17,31 @@ const fetchImageAsBase64 = async (url) => {
   };
 };
 
-export const generateGeminiReply = async ({ message, imageUrl }) => {
+export const generateGeminiReply = async ({ messages }) => {
   const contents = [];
 
-  // Add Markdown formatting instruction
+  // 1. Add system prompt first (as first user message)
   contents.push({
-    text: identityPrompt,
+    role: "user",
+    parts: [{ text: identityPrompt }],
   });
 
-  // Optional image input
-  if (imageUrl) {
-    const { mimeType, data } = await fetchImageAsBase64(imageUrl);
-    contents.push({ inlineData: { mimeType, data } });
+  // 2. Format all prior messages
+  for (const msg of messages) {
+    const role = msg.sender === "user" ? "user" : "model";
+    const parts = [];
+
+    if (msg.text) parts.push({ text: msg.text });
+
+    if (msg.imageUrl) {
+      const { mimeType, data } = await fetchImageAsBase64(msg.imageUrl);
+      parts.push({ inlineData: { mimeType, data } });
+    }
+
+    contents.push({ role, parts });
   }
 
-  // Add user's actual message
-  if (message) {
-    contents.push({ text: message });
-  }
-
+  // 3. Generate Gemini response
   const result = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents,
@@ -45,20 +51,28 @@ export const generateGeminiReply = async ({ message, imageUrl }) => {
     },
   });
 
-  console.log(result);
-
-  return result.text;
+  const reply = result.text;
+  return reply;
 };
 
 // export const generateGeminiReply = async ({ message, imageUrl }) => {
 //   const contents = [];
 
+//   // Add Markdown formatting instruction
+//   contents.push({
+//     text: identityPrompt,
+//   });
+
+//   // Optional image input
 //   if (imageUrl) {
 //     const { mimeType, data } = await fetchImageAsBase64(imageUrl);
 //     contents.push({ inlineData: { mimeType, data } });
 //   }
 
-//   if (message) contents.push({ text: message });
+//   // Add user's actual message
+//   if (message) {
+//     contents.push({ text: message });
+//   }
 
 //   const result = await ai.models.generateContent({
 //     model: "gemini-2.5-flash",
@@ -68,6 +82,8 @@ export const generateGeminiReply = async ({ message, imageUrl }) => {
 //       temperature: 0.7,
 //     },
 //   });
+
+//   console.log(result);
 
 //   return result.text;
 // };

@@ -3,7 +3,27 @@ import Message from "../models/Message.js";
 import { generateGeminiReply } from "../services/geminiService.js";
 
 // 🔁 Reusable function to process user & Gemini messages
+// const processGeminiMessage = async ({ chatId, text, imageUrl }) => {
+//   const userMessage = await Message.create({
+//     chatId,
+//     sender: "user",
+//     text,
+//     imageUrl,
+//   });
+
+//   const geminiReply = await generateGeminiReply({ message: text, imageUrl });
+
+//   const geminiMessage = await Message.create({
+//     chatId,
+//     sender: "gemini",
+//     text: geminiReply,
+//   });
+
+//   return { userMessage, geminiMessage };
+// };
+
 const processGeminiMessage = async ({ chatId, text, imageUrl }) => {
+  // 1. Save user message
   const userMessage = await Message.create({
     chatId,
     sender: "user",
@@ -11,8 +31,17 @@ const processGeminiMessage = async ({ chatId, text, imageUrl }) => {
     imageUrl,
   });
 
-  const geminiReply = await generateGeminiReply({ message: text, imageUrl });
+  // 2. Fetch prior messages (including current one)
+  const previousMessages = await Message.find({ chatId })
+    .sort({ createdAt: 1 })
+    .limit(20); // optional limit
 
+  // 3. Call Gemini with full conversation
+  const geminiReply = await generateGeminiReply({
+    messages: previousMessages,
+  });
+
+  // 4. Save Gemini reply
   const geminiMessage = await Message.create({
     chatId,
     sender: "gemini",

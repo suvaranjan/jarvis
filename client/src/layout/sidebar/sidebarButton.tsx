@@ -17,10 +17,8 @@ export const SidebarButton = ({
       `}
       title={!isExpanded ? label : undefined}
     >
-      <Icon size={24} className="shrink-0 text-gray-500" />
-      {isExpanded && (
-        <span className="text-sm font-medium truncate">{label}</span>
-      )}
+      <Icon size={24} className="shrink-0" />
+      {isExpanded && <span className="font-medium truncate">{label}</span>}
     </button>
   );
 };

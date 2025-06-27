@@ -8,6 +8,7 @@ import chatRoutes from "./routes/chatRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import { handleClerkWebhook } from "./controllers/webhookController.js";
 import { requireAuth } from "./middleware/requireAuth.js";
+import { generateImageToken } from "./services/imageKit.js";
 
 dotenv.config();
 const app = express();
@@ -34,6 +35,7 @@ app.use(express.json({ limit: "50mb" }));
 // Routes
 app.use("/api/chat", requireAuth, chatRoutes);
 app.use("/api/user", requireAuth, userRoutes);
+app.get("/api/get-imagekit-token", requireAuth, generateImageToken);
 
 // Health check route
 app.get("/", async (req, res) => {

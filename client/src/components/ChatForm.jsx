@@ -1,34 +1,66 @@
-import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Plus } from "lucide-react";
+import { useState, useRef } from "react";
+import { ArrowUp, Loader2, Plus, X } from "lucide-react";
+import { useAutoResizeTextarea } from "../hooks/useAutoResizeTextarea";
+import { useAxios } from "../hooks/useAxios";
+import { upload } from "@imagekit/react";
 
-const MAX_TEXTAREA_HEIGHT = 200;
-
-const ChatForm = ({ onSubmit }) => {
+const ChatForm = ({ onSubmit, loading }) => {
   const [input, setInput] = useState("");
+  const [imageUrl, setImageUrl] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  useAutoResizeTextarea(textareaRef, input);
+  const { authorizedAxios } = useAxios();
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const res = await authorizedAxios.get("/get-imagekit-token");
+      const { signature, expire, token } = res.data;
+
+      const response = await upload({
+        file,
+        fileName: file.name,
+        token,
+        expire,
+        signature,
+        publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY,
+        onProgress: (event) => {
+          const percent = (event.loaded / event.total) * 100;
+          setProgress(Math.round(percent));
+        },
+      });
+
+      setImageUrl(response.url);
+    } catch (err) {
+      console.error("Image upload failed", err);
+    } finally {
+      setIsUploading(false);
+      setProgress(0);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(input);
+    const payload = {
+      inputText: input.trim(),
+      ...(imageUrl && { imageUrl }),
+    };
+    onSubmit(payload);
     setInput("");
+    setImageUrl(null);
   };
 
-  const handleImageSelect = () => {
-    alert("Image picker triggered (to be implemented)");
+  const removeImage = () => {
+    setImageUrl(null);
   };
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.overflowY = "hidden";
-
-      const newHeight = Math.min(textarea.scrollHeight, MAX_TEXTAREA_HEIGHT);
-      textarea.style.height = `${newHeight}px`;
-      textarea.style.overflowY =
-        textarea.scrollHeight > MAX_TEXTAREA_HEIGHT ? "auto" : "hidden";
-    }
-  }, [input]);
 
   return (
     <form
@@ -52,28 +84,66 @@ const ChatForm = ({ onSubmit }) => {
         />
       </div>
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
       <div className="flex justify-between items-center px-1">
-        <button
-          type="button"
-          onClick={handleImageSelect}
-          title="Attach image"
-          className="flex items-center gap-1 rounded-md bg-gray-100 hover:bg-gray-200 px-3 py-1.5 text-gray-700"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="text-sm">Add Image</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {!imageUrl && !isUploading && (
+            <ImageUploadBtn onClick={() => fileInputRef.current?.click()} />
+          )}
+
+          {isUploading && (
+            <div className="flex items-center gap-2 text-sm text-gray-600 px-3 py-1.5 bg-gray-100 rounded-full">
+              <div className="relative w-3 h-3">
+                <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
+                <div className="absolute inset-0 bg-green-600 rounded-full"></div>
+              </div>
+              Uploading {progress}%
+            </div>
+          )}
+
+          {imageUrl && (
+            <div className="relative">
+              <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-100 shadow-xs">
+                <img
+                  src={imageUrl}
+                  alt="Uploaded"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              </div>
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute -top-2 -right-2 bg-red-700 rounded-full p-1 shadow-md"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          )}
+        </div>
 
         <button
           type="submit"
-          disabled={!input.trim()}
+          disabled={!input.trim() && !imageUrl}
           title="Send message"
           className={`p-2 rounded-md flex items-center transition-colors ${
-            input.trim()
-              ? "bg-blue-500 text-white hover:bg-blue-600"
+            input.trim() || imageUrl
+              ? "bg-black text-white hover:bg-blue-600"
               : "bg-gray-200 text-gray-400 cursor-not-allowed"
           }`}
         >
-          <ArrowUp className="w-5 h-5" />
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <ArrowUp className="w-5 h-5" />
+          )}
         </button>
       </div>
     </form>
@@ -81,3 +151,17 @@ const ChatForm = ({ onSubmit }) => {
 };
 
 export default ChatForm;
+
+function ImageUploadBtn({ onClick }) {
+  return (
+    <button
+      type="button"
+      title="Attach image"
+      onClick={onClick}
+      className="flex items-center gap-1 rounded-full bg-gray-100 hover:bg-gray-200 px-3 py-1.5 text-gray-700 transition-colors"
+    >
+      <Plus className="w-5 h-5" />
+      <span className="text-sm">Add Image</span>
+    </button>
+  );
+}

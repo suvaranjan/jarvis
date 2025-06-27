@@ -52,7 +52,7 @@ export const Sidebar = ({
           {isOpen && (
             <div className="flex items-center gap-3 overflow-hidden transition-all duration-200">
               <h2 className="text-lg font-semibold text-gray-900 whitespace-nowrap">
-                Gemini
+                Jarvis
               </h2>
             </div>
           )}
@@ -62,11 +62,7 @@ export const Sidebar = ({
             className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
             title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
-            {isOpen ? (
-              <X size={24} className="text-gray-500" />
-            ) : (
-              <AlignLeft size={24} className="text-gray-500" />
-            )}
+            {isOpen ? <X size={24} /> : <AlignLeft size={24} />}
           </button>
         </div>
 
@@ -101,7 +97,7 @@ export const Sidebar = ({
                 <nav className="space-y-1 px-1">
                   {chats.map((chat) => (
                     <ChatListItem
-                      key={chat.chatId}
+                      key={chat.id}
                       label={chat.title}
                       onClick={() => onNavigate(chat.id)}
                       isActive={currentChatId === chat.id}

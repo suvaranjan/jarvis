@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAxios } from "../hooks/useAxios";
 
 function Test() {
@@ -11,7 +11,7 @@ function Test() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await authorizedAxios.post("/chat", { msg: "hi" });
+        const response = await authorizedAxios.get("/get-imagekit-token");
         setData(response.data);
       } catch (err) {
         setError(err);

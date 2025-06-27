@@ -23,8 +23,6 @@ const SidebarLayout = () => {
         setChats(res.data);
       } catch (error) {
         console.log(error.message);
-
-        // console.error("❌ Failed to fetch chats:", error);
       }
     };
 
@@ -74,9 +72,9 @@ const SidebarLayout = () => {
               className="p-1.5 rounded-md hover:bg-gray-100 -ml-1 transition-colors"
               title="Open sidebar"
             >
-              <AlignLeft size={24} className="text-gray-500" />
+              <AlignLeft size={24} />
             </button>
-            <h1 className="text-lg font-semibold text-gray-900">Gemini</h1>
+            <h1 className="text-lg font-semibold text-gray-900">Jarvis</h1>
           </header>
         )}
         <div className="flex-1 overflow-hidden">
