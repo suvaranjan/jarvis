@@ -165,3 +165,57 @@ export const getChatsForUser = async (req, res) => {
       .json({ error: "Failed to fetch chat list", details: err.message });
   }
 };
+
+// DELETE /api/chat/:chatId
+export const deleteChat = async (req, res) => {
+  const { chatId } = req.params;
+  const { dbUserId } = req.user;
+
+  try {
+    const chat = await Chat.findOneAndDelete({ _id: chatId, userId: dbUserId });
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found or unauthorized." });
+    }
+
+    // Also delete associated messages
+    await Message.deleteMany({ chatId });
+
+    res.status(200).json({ message: "Chat and associated messages deleted." });
+  } catch (err) {
+    console.error("❌ Error deleting chat:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to delete chat", details: err.message });
+  }
+};
+
+// PUT /api/chat/:chatId
+export const editChat = async (req, res) => {
+  const { chatId } = req.params;
+  const { title } = req.body;
+  const { dbUserId } = req.user;
+
+  if (!title) {
+    return res.status(400).json({ error: "Title is required to update chat." });
+  }
+
+  try {
+    const chat = await Chat.findOneAndUpdate(
+      { _id: chatId, userId: dbUserId },
+      { title },
+      { new: true }
+    );
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found or unauthorized." });
+    }
+
+    res.status(200).json({ message: "Chat updated successfully", chat });
+  } catch (err) {
+    console.error("❌ Error editing chat:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to edit chat", details: err.message });
+  }
+};

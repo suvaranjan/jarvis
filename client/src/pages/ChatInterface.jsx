@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAxios } from "../hooks/useAxios";
 import ChatForm from "../components/ChatForm";
 import { Loader2 } from "lucide-react";
+import { useChatContext } from "../context/chatContext";
 
 const ChatInterface = () => {
   const { chatId } = useParams();
@@ -11,6 +12,7 @@ const ChatInterface = () => {
   const [loading, setLoading] = useState(true);
   const [thinking, setThinking] = useState(false);
   const messagesEndRef = useRef(null);
+  const { state, dispatch } = useChatContext();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -21,6 +23,11 @@ const ChatInterface = () => {
       try {
         const res = await authorizedAxios.get(`/chat/${chatId}/get-messages`);
         setMessages(res.data);
+
+        dispatch({
+          type: "SET_ACTIVE_CHAT",
+          payload: { id: chatId, title: null },
+        });
       } catch (err) {
         console.error("Failed to fetch messages:", err);
       } finally {

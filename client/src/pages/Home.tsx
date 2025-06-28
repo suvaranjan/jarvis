@@ -2,11 +2,13 @@ import { useNavigate } from "react-router-dom";
 import ChatForm from "../components/ChatForm";
 import { useAxios } from "../hooks/useAxios";
 import { useState } from "react";
+import { useChatContext } from "../context/chatContext";
 
 const Home = () => {
   const { authorizedAxios } = useAxios();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { dispatch } = useChatContext();
 
   const handleSubmit = async ({ inputText, imageUrl }) => {
     const input = inputText?.trim();
@@ -22,6 +24,19 @@ const Home = () => {
         title: generatedTitle,
         userMessage: input,
         imageUrl: imageUrl || null,
+      });
+
+      dispatch({
+        type: "ADD_CHAT",
+        payload: { title: generatedTitle, id: response.data.chat._id },
+      });
+
+      dispatch({
+        type: "SET_ACTIVE_CHAT",
+        payload: {
+          id: response.data.chat._id,
+          title: generatedTitle,
+        },
       });
 
       navigate(`/chat/${response.data.chat._id}`);

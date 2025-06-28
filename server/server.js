@@ -9,6 +9,7 @@ import userRoutes from "./routes/userRoutes.js";
 import { handleClerkWebhook } from "./controllers/webhookController.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import { generateImageToken } from "./services/imageKit.js";
+// import cleanRoute from "./utils/book/clean.js";
 
 dotenv.config();
 const app = express();
@@ -20,6 +21,7 @@ connectDB();
 // CORS setup
 app.use(cors());
 app.use(clerkMiddleware());
+// app.use("/api", cleanRoute);
 
 // Clerk webhook must receive raw body, so define this BEFORE express.json
 app.post(
