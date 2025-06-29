@@ -10,7 +10,6 @@ const ChatForm = ({ onSubmit, loading }) => {
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [abortController, setAbortController] = useState(null);
-  const [isHovering, setIsHovering] = useState(false);
 
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -115,13 +114,7 @@ const ChatForm = ({ onSubmit, loading }) => {
           )}
 
           {isUploading && (
-            <ImageUploadProgress
-              progress={progress}
-              isHovering={isHovering}
-              onClick={cancelUpload}
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-            />
+            <ImageUploadProgress progress={progress} onClick={cancelUpload} />
           )}
 
           {imageUrl && (
@@ -143,30 +136,37 @@ export default ChatForm;
 const ImageUploadBtn = ({ onClick }) => (
   <button
     type="button"
-    title="Attach image"
     onClick={onClick}
-    className="flex items-center gap-1 rounded-full bg-gray-100 hover:bg-gray-200 px-3 py-1.5 text-gray-700 transition-colors"
+    className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-none"
+    aria-label="Upload image"
   >
-    <Plus className="w-5 h-5" />
-    <span className="text-sm">Add Image</span>
+    <Plus className="w-4 h-4 stroke-[2.5]" />
+    <span>Add Image</span>
   </button>
 );
 
-const ImageUploadProgress = ({ progress, isHovering, onClick }) => (
-  <div
-    className="relative w-full max-w-xs rounded-full text-sm cursor-pointer bg-gray-100 overflow-hidden"
-    onClick={onClick}
-  >
-    <div
-      className="absolute left-0 top-0 h-full transition-colors duration-300 ease-out"
-      style={{
-        width: `${progress}%`,
-        backgroundColor: isHovering ? "#fca5a5" : "#86efac",
-      }}
-    />
-    <div className="relative z-10 flex items-center justify-between px-3 py-1.5">
-      <span className="mr-1">{isHovering ? "Cancel upload" : "Uploading"}</span>
-      <span className="font-medium">{progress}%</span>
+const ImageUploadProgress = ({ progress, onClick }) => (
+  <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 shadow-xs">
+    <div className="flex-1 min-w-[160px]">
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-green-400 transition-all duration-300 ease-out"
+          style={{
+            width: `${progress}%`,
+          }}
+        />
+      </div>
+    </div>
+    <div className="flex items-center gap-2 text-sm text-gray-600">
+      <span className="tabular-nums">{progress}%</span>
+      <button
+        type="button"
+        onClick={onClick}
+        className="p-1 text-red-500"
+        aria-label="Cancel upload"
+      >
+        <X className="w-4 h-4" />
+      </button>
     </div>
   </div>
 );
