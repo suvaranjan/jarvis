@@ -1,28 +1,6 @@
-# ========== Node.js (client & server) ========== 
+
 node_modules/
 **/node_modules/
-
-# ========== Environment Variables ==========
-.env
-# Allow .env.example explicitly
-!.env.example
-!client/.env.example
-!server/.env.example
-
-# Ignore all other env files
-.env.*
-client/.env*
-server/.env*
-
-# ========== React App (client) ==========
-client/build/
-client/.cache/
-client/.parcel-cache/
-
-# ========== Express App (server) ==========
-server/dist/
-server/build/
-server/tmp/
-
-
+client/.env
+server/.env
 server/utils/book

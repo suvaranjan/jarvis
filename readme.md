@@ -6,7 +6,7 @@ This project consists of a **client** (frontend) and a **server** (backend). Fol
 
 ## 📁 Environment Configuration
 
-###  Client `.env` (inside `/client` folder)
+### Client `.env` (inside `/client` folder)
 
 Create a `.env` file inside the `client` directory with the following:
 
@@ -23,7 +23,6 @@ Create a `.env` file inside the `server` directory with the following:
 ```env
 PORT=
 MONGODB_URI=
-appName=
 GEMINI_API_KEY=
 CLERK_WEBHOOK_SECRET=
 CLERK_PUBLISHABLE_KEY=
@@ -57,5 +56,4 @@ npm run dev
 
 ## ✅ You're all set!
 
-Make sure all environment variables are correctly filled out for full functionality.  
-
+Make sure all environment variables are correctly filled out for full functionality.
