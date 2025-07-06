@@ -27,7 +27,6 @@ function RootLayout() {
   const { state, dispatch } = useChatContext();
   const chats = state.chats;
   const { user } = useUser();
-  console.log(user);
 
   useEffect(() => {
     const handleResize = () => {
